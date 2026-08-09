@@ -1,0 +1,9 @@
+# Binaries and object files
+bin/
+obj/
+*.exe
+*.o
+
+# Code::Blocks user-specific layout/workspace files
+*.depend
+*.layout
