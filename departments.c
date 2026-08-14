@@ -279,3 +279,47 @@ void assignDepartmentManager(void)
 
     printf("\nSuccess! Employee %d is now the manager of Department %d.\n", target_emp_id, target_dept_id);
 }
+/* =========================================================
+   View Department Employees
+   ========================================================= */
+
+void viewDepartmentEmployees(void)
+{
+    int target_dept_id;
+    int found_anyone = 0;
+    int i;
+
+    printf("\n========== VIEW DEPARTMENT EMPLOYEES ==========\n");
+
+    while (1)
+    {
+        if (readInt("Enter Department ID to view its employees: ", &target_dept_id))
+        {
+            break;
+        }
+    }
+
+    printf("\n");
+    printf("============================================================\n");
+    printf("              EMPLOYEES IN DEPARTMENT %d\n", target_dept_id);
+    printf("============================================================\n");
+    printf(" %-10s | %-20s | %-20s\n", "ID", "Name", "Job Title");
+    printf("------------------------------------------------------------\n");
+    for (i = 0; i < 100 && employees[i].employeeID != 0; i++)
+    {
+        if (employees[i].departmentID == target_dept_id)
+        {
+            printf(" %-10d | %-20s | %-20s\n", 
+                   employees[i].employeeID, 
+                   employees[i].fullName, 
+                   employees[i].jobTitle);
+            found_anyone = 1;
+        }
+    }
+
+    if (found_anyone == 0)
+    {
+        printf(" No employees found working in this department.\n");
+    }
+    printf("============================================================\n");
+}
