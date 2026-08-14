@@ -49,6 +49,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="departments.h" />
+		<Unit filename="employees-test.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="employees.dat" />
+		<Unit filename="fakedepartment.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="fakedepartment.h" />
 		<Unit filename="hierarchy.c">
 			<Option compilerVar="CC" />
 		</Unit>

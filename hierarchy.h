@@ -5,5 +5,5 @@
 
 void viewDirectReports(void);
 void viewEmployeeHierarchy(void);
-
+void viewDepartmentEmployees(void);
 #endif // HIERARCHY_H

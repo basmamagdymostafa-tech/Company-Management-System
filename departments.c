@@ -1,64 +1,203 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "Config.h"
 #include "departments.h"
-struct department department_list[50];
+
+/* =========================================================
+   Department Data
+   ========================================================= */
+
+struct department department_list[MAX_DEPARTMENTS];
 int total_departments = 0;
+
+
+/* =========================================================
+   Add Department
+   ========================================================= */
 
 void addDepartment(void)
 {
     struct department new_dept;
-    int is_duplicate = 0;
     int i;
 
-    printf("\n--- Add New Department ---\n");
-    if (total_departments >= 50) {
+    printf("\n========== ADD DEPARTMENT ==========\n");
+
+    if (total_departments >= MAX_DEPARTMENTS)
+    {
         printf("Error: Maximum number of departments reached.\n");
+        pauseScreen();
         return;
     }
 
-    printf("Enter unique Department ID: ");
-    scanf("%d", &new_dept.departmentID);
+    /* ================= Department ID ================= */
 
-    for (i = 0; i < total_departments; i++) {
-        if (department_list[i].departmentID == new_dept.departmentID) {
-            is_duplicate = 1;
+    while (1)
+    {
+        while (!readInt("Department ID: ",
+                        &new_dept.departmentID))
+        {
+        }
+
+        if (new_dept.departmentID <= 0)
+        {
+            printf("Invalid Department ID! ID must be greater than 0.\n");
+            continue;
+        }
+
+        for (i = 0; i < total_departments; i++)
+        {
+            if (department_list[i].departmentID ==
+                new_dept.departmentID)
+            {
+                printf("Error: Department ID %d already exists!\n",
+                       new_dept.departmentID);
+                break;
+            }
+        }
+
+        if (i == total_departments)
+        {
+            break;
         }
     }
 
-    if (is_duplicate == 1) {
-        printf("Error: Department ID %d already exists!\n", new_dept.departmentID);
-        return;
+    /* ================= Department Name ================= */
+
+    while (!readString("Department Name: ",
+                       new_dept.departmentName,
+                       sizeof(new_dept.departmentName)))
+    {
     }
-    printf("Enter Department Name: ");
-    scanf(" %[^\n]", new_dept.departmentName);
-    printf("Enter Department Description: ");
-    scanf(" %[^\n]", new_dept.description);
+
+    /* ================= Description ================= */
+
+    while (!readString("Department Description: ",
+                       new_dept.description,
+                       sizeof(new_dept.description)))
+    {
+    }
+
+    /* ================= Manager ID ================= */
+
     new_dept.departmentManagerID = 0;
+
+    /* ================= Save Department ================= */
+
     department_list[total_departments] = new_dept;
     total_departments++;
 
-    printf("Success! Department added.\n");
-}
+    saveDepartments();
 
+    printf("\nDepartment added successfully!\n");
+
+
+}
 
 void viewDepartment(void)
 {
+    int viewOption = 0;
+    int findDept = 0;
+    int startIndex = 0;
+    int endIndex = 0;
+    int foundIndex = -1;
     int i;
-    if (total_departments == 0) {
-        printf("No departments found. The database is empty.\n");
+
+    if (total_departments == 0)
+    {
+        printf("\n");
+        printf("============================================================\n");
+        printf("                   DEPARTMENT INFORMATION\n");
+        printf("============================================================\n");
+        printf("\nNo departments found.\n");
+        printf("============================================================\n");
         return;
     }
 
-    printf("\n--- Department List ---\n");
-    printf("ID \t Name \t\t Manager ID \t Description\n");
-    printf("----------------------------------------------------\n");
+    printf("\n");
+    printf("============================================================\n");
+    printf("                 DEPARTMENT VIEW OPTIONS\n");
+    printf("============================================================\n");
+    printf("| 1. View Specific Department (by ID)                       |\n");
+    printf("| 2. View All Departments                                   |\n");
+    printf("============================================================\n\n");
 
-    for (i = 0; i < total_departments; i++) {
-        printf("%d \t %s \t %d \t\t %s\n",
-               department_list[i].departmentID,
-               department_list[i].departmentName,
-               department_list[i].departmentManagerID,
+    while (1)
+    {
+        if (readInt("Enter your choice (1-2): ", &viewOption))
+        {
+            if (viewOption == 1 || viewOption == 2)
+            {
+                break;
+            }
+        }
+
+        printf("Invalid choice! Please enter 1 or 2.\n");
+    }
+
+    switch (viewOption)
+    {
+        case 1:
+            while (1)
+            {
+                if (!readInt("Department ID you are searching for: ",
+                             &findDept))
+                {
+                    continue;
+                }
+
+                if (findDept <= 0)
+                {
+                    printf("Invalid Department ID! ID must be greater than 0.\n");
+                    continue;
+                }
+
+                break;
+            }
+
+            for (i = 0; i < total_departments; i++)
+            {
+                if (department_list[i].departmentID == findDept)
+                {
+                    foundIndex = i;
+                    break;
+                }
+            }
+
+            if (foundIndex == -1)
+            {
+                printf("\nDepartment ID %d not found.\n", findDept);
+                return;
+            }
+
+            startIndex = foundIndex;
+            endIndex = foundIndex + 1;
+            break;
+
+        case 2:
+            startIndex = 0;
+            endIndex = total_departments;
+            break;
+
+        default:
+            return;
+    }
+
+    for (i = startIndex; i < endIndex; i++)
+    {
+        printf("\n");
+        printf("============================================================\n");
+        printf("                   DEPARTMENT INFORMATION\n");
+        printf("============================================================\n");
+        printf("  Department ID         : %-31d  \n",
+               department_list[i].departmentID);
+        printf("  Department Name       : %-31s  \n",
+               department_list[i].departmentName);
+        printf("  Department Manager ID : %-31d  \n",
+               department_list[i].departmentManagerID);
+        printf("  Description           : %-31s  \n",
                department_list[i].description);
+        printf("============================================================\n");
     }
 }
+

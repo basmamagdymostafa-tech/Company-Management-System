@@ -8,3 +8,5 @@ void viewEmployeeHierarchy(void)
 {
     /* To be implemented */
 }
+void viewDepartmentEmployees(void){
+}
