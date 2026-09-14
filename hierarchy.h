@@ -1,9 +1,10 @@
 #ifndef HIERARCHY_H
 #define HIERARCHY_H
 
-#include "Config.h"
+#include "config.h"
 
 void viewDirectReports(void);
 void viewEmployeeHierarchy(void);
-void viewDepartmentEmployees(void);
-#endif // HIERARCHY_H
+void printHierarchy(s32 managerID, s32 level);
+
+#endif /* HIERARCHY_H */
