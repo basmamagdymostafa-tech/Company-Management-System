@@ -1,446 +1,543 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Storage.h"
-#include "Employees.h"
-#include "Customers.h"
+
+#include "storage.h"
+#include "employees.h"
+#include "customers.h"
 #include "departments.h"
 
-int saveEmployee(void)
+/* ==================== Employee Storage ==================== */
+
+s32 saveEmployee(void)
 {
     FILE *file;
-    int i;
+    s32 index;
 
     file = fopen("employees.txt", "w");
 
     if (file == NULL)
     {
-        printf("Error: Could not open employee file for saving.\n");
+        printf(COLOR_RED
+               "Error: Could not open employee file for saving.\n"
+               COLOR_RESET);
         return 0;
     }
 
-    for (i = 0; i < 100; i++)
+    for (index = 0;
+            index < MAX_EMPLOYEES && employees[index].employeeID != 0;
+            index++)
     {
-        if (employees[i].employeeID == 0)
-        {
-            break;
-        }
-
-        // Order: ID, Name, Phone, Email, Dept, JobTitle, ManagerID, HiringDate, Status
-        fprintf(file, "%d|%s|%s|%s|%d|%s|%d|%s|%s\n",
-                employees[i].employeeID,
-                employees[i].fullName,
-                employees[i].phoneNumber,
-                employees[i].email,
-                employees[i].departmentID,
-                employees[i].jobTitle,
-                employees[i].managerID,
-                employees[i].hiringDate,
-                employees[i].employmentStatus);
+        fprintf(file,
+                "%d|%s|%s|%s|%d|%s|%d|%s|%s\n",
+                employees[index].employeeID,
+                employees[index].fullName,
+                employees[index].phoneNumber,
+                employees[index].email,
+                employees[index].departmentID,
+                employees[index].jobTitle,
+                employees[index].managerID,
+                employees[index].hiringDate,
+                employees[index].employmentStatus);
     }
 
     fclose(file);
+    saveNextIDs();
+
     return 1;
 }
 
-int loadEmployee(void)
+s32 loadEmployee(void)
 {
     FILE *file;
-    int i = 0;
+    s32 index;
+    s32 result;
+    s32 loadedNextEmployeeID;
+    s32 highestEmployeeID;
 
     file = fopen("employees.txt", "r");
 
+    for (index = 0; index < MAX_EMPLOYEES; index++)
+    {
+        employees[index].employeeID = 0;
+    }
+
     if (file == NULL)
     {
-        /* No file means there are no saved employees */
-        for (i = 0; i < 100; i++)
-        {
-            employees[i].employeeID = 0;
-        }
         return 0;
     }
 
-    /* Clear the array before loading */
-    for (i = 0; i < 100; i++)
+    index = 0;
+
+    while (index < MAX_EMPLOYEES)
     {
-        employees[i].employeeID = 0;
-    }
+        result = fscanf(
+                     file,
+                     "%d|%99[^|]|%19[^|]|%99[^|]|%d|%99[^|]|%d|%19[^|]|%99[^\n]\n",
+                     &employees[index].employeeID,
+                     employees[index].fullName,
+                     employees[index].phoneNumber,
+                     employees[index].email,
+                     &employees[index].departmentID,
+                     employees[index].jobTitle,
+                     &employees[index].managerID,
+                     employees[index].hiringDate,
+                     employees[index].employmentStatus);
 
-    i = 0;
-
-    while (i < 100)
-    {
-        int result;
-
-        // Corrected format string to read all 9 attributes matching fprintf exactly
-        result = fscanf(file,
-                        "%d|%99[^|]|%99[^|]|%99[^|]|%d|%99[^|]|%d|%99[^|]|%99[^\n]\n",
-                        &employees[i].employeeID,
-                        employees[i].fullName,
-                        employees[i].phoneNumber,
-                        employees[i].email,
-                        &employees[i].departmentID,
-                        employees[i].jobTitle,
-                        &employees[i].managerID,
-                        employees[i].hiringDate,
-                        employees[i].employmentStatus);
-
-        // Must check for 9 successful matches instead of 7
         if (result != 9)
         {
             break;
         }
 
-        i++;
+        index++;
     }
 
     fclose(file);
+
+    loadedNextEmployeeID = nextEmployeeID;
+    highestEmployeeID = 0;
+
+    for (index = 0;
+            index < MAX_EMPLOYEES && employees[index].employeeID != 0;
+            index++)
+    {
+        if (employees[index].employeeID > highestEmployeeID)
+        {
+            highestEmployeeID = employees[index].employeeID;
+        }
+    }
+
+    nextEmployeeID = highestEmployeeID + 1;
+
+    if (loadedNextEmployeeID > nextEmployeeID)
+    {
+        nextEmployeeID = loadedNextEmployeeID;
+    }
+
     return 1;
 }
-/*-------------------------------------------------------------------*/
-int saveCustomers(void)
+
+/* ==================== Customer Storage ==================== */
+
+s32 saveCustomers(void)
 {
     FILE *file;
-    int i;
+    s32 index;
 
     file = fopen("customers.txt", "w");
 
     if (file == NULL)
     {
-        printf("Error: Could not open customer file for saving.\n");
+        printf(COLOR_RED
+               "Error: Could not open customer file for saving.\n"
+               COLOR_RESET);
         return 0;
     }
 
-    for (i = 0; i < customerCount; i++)
+    for (index = 0; index < customerCount; index++)
     {
         fprintf(file,
-                "%d|%s|%s|%s|%s|%s|%s|%u|%s\n",
-                customers[i].customerID,
-                customers[i].fullName,
-                customers[i].phoneNumber,
-                customers[i].email,
-                customers[i].address,
-                customers[i].nationalID,
-                customers[i].registrationDate,
-                customers[i].status,
-                customers[i].notes);
+                "%d|%s|%s|%s|%s|%s|%s|%d|%s\n",
+                customers[index].customerID,
+                customers[index].fullName,
+                customers[index].phoneNumber,
+                customers[index].email,
+                customers[index].address,
+                customers[index].nationalID,
+                customers[index].registrationDate,
+                (s32)customers[index].status,
+                customers[index].notes);
     }
 
     fclose(file);
+    saveNextIDs();
 
     return 1;
 }
 
-/*---------------------------------------------------------------------*/
-int loadCustomers(void)
+s32 loadCustomers(void)
 {
     FILE *file;
-    char line[1000];
-    int i = 0;
+    s8 line[1000];
+    s8 *start;
+    s8 *end;
+    s32 index;
+    s32 length;
+    s32 loadedNextCustomerID;
+    s32 highestCustomerID;
 
     file = fopen("customers.txt", "r");
 
+    customerCount = 0;
+
     if (file == NULL)
     {
-        customerCount = 0;
         return 0;
     }
 
-    customerCount = 0;
+    index = 0;
 
-    while (i < MAX_CUSTOMERS && fgets(line, sizeof(line), file) != NULL)
+    while (index < MAX_CUSTOMERS &&
+            fgets(line, sizeof(line), file) != NULL)
     {
-        char *start;
-        char *end;
-        int length;
-
-        /* Remove newline */
         line[strcspn(line, "\n")] = '\0';
-
         start = line;
 
-        /* =====================================================
-           Customer ID
-           ===================================================== */
+        /* Customer ID */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
         *end = '\0';
-
-        customers[i].customerID = atoi(start);
-
+        customers[index].customerID = atoi(start);
         start = end + 1;
 
-
-        /* =====================================================
-           Full Name
-           ===================================================== */
+        /* Full Name */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].fullName))
-            length = sizeof(customers[i].fullName) - 1;
+        if (length >= (s32)sizeof(customers[index].fullName))
+        {
+            length = (s32)sizeof(customers[index].fullName) - 1;
+        }
 
-        strncpy(customers[i].fullName, start, length);
-        customers[i].fullName[length] = '\0';
-
+        strncpy(customers[index].fullName, start, length);
+        customers[index].fullName[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           Phone Number
-           ===================================================== */
+        /* Phone Number */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].phoneNumber))
-            length = sizeof(customers[i].phoneNumber) - 1;
+        if (length >= (s32)sizeof(customers[index].phoneNumber))
+        {
+            length = (s32)sizeof(customers[index].phoneNumber) - 1;
+        }
 
-        strncpy(customers[i].phoneNumber, start, length);
-        customers[i].phoneNumber[length] = '\0';
-
+        strncpy(customers[index].phoneNumber, start, length);
+        customers[index].phoneNumber[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           Email
-           ===================================================== */
+        /* Email */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].email))
-            length = sizeof(customers[i].email) - 1;
+        if (length >= (s32)sizeof(customers[index].email))
+        {
+            length = (s32)sizeof(customers[index].email) - 1;
+        }
 
-        strncpy(customers[i].email, start, length);
-        customers[i].email[length] = '\0';
-
+        strncpy(customers[index].email, start, length);
+        customers[index].email[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           Address
-           ===================================================== */
+        /* Address */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].address))
-            length = sizeof(customers[i].address) - 1;
+        if (length >= (s32)sizeof(customers[index].address))
+        {
+            length = (s32)sizeof(customers[index].address) - 1;
+        }
 
-        strncpy(customers[i].address, start, length);
-        customers[i].address[length] = '\0';
-
+        strncpy(customers[index].address, start, length);
+        customers[index].address[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           National ID
-           ===================================================== */
+        /* National ID */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].nationalID))
-            length = sizeof(customers[i].nationalID) - 1;
+        if (length >= (s32)sizeof(customers[index].nationalID))
+        {
+            length = (s32)sizeof(customers[index].nationalID) - 1;
+        }
 
-        strncpy(customers[i].nationalID, start, length);
-        customers[i].nationalID[length] = '\0';
-
+        strncpy(customers[index].nationalID, start, length);
+        customers[index].nationalID[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           Registration Date
-           ===================================================== */
+        /* Registration Date */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
-        length = end - start;
+        length = (s32)(end - start);
 
-        if (length >= sizeof(customers[i].registrationDate))
-            length = sizeof(customers[i].registrationDate) - 1;
+        if (length >= (s32)sizeof(customers[index].registrationDate))
+        {
+            length = (s32)sizeof(customers[index].registrationDate) - 1;
+        }
 
-        strncpy(customers[i].registrationDate, start, length);
-        customers[i].registrationDate[length] = '\0';
-
+        strncpy(customers[index].registrationDate, start, length);
+        customers[index].registrationDate[length] = '\0';
         start = end + 1;
 
-
-        /* =====================================================
-           Status
-           ===================================================== */
+        /* Status */
         end = strchr(start, '|');
-
         if (end == NULL)
+        {
             break;
+        }
 
         *end = '\0';
-
-        customers[i].status = (u8)atoi(start);
-
+        customers[index].status = (u8)atoi(start);
         start = end + 1;
 
-
-        /* =====================================================
-           Notes
-           ===================================================== */
-        strncpy(customers[i].notes,
+        /* Notes */
+        strncpy(customers[index].notes,
                 start,
-                sizeof(customers[i].notes) - 1);
-
-        customers[i].notes[
-            sizeof(customers[i].notes) - 1
+                sizeof(customers[index].notes) - 1);
+        customers[index].notes[
+            sizeof(customers[index].notes) - 1
         ] = '\0';
 
-
-        /* Customer loaded successfully */
-        i++;
+        index++;
     }
 
-    customerCount = i;
-
+    customerCount = index;
     fclose(file);
+
+    loadedNextCustomerID = nextCustomerID;
+    highestCustomerID = 0;
+
+    for (index = 0; index < customerCount; index++)
+    {
+        if (customers[index].customerID > highestCustomerID)
+        {
+            highestCustomerID = customers[index].customerID;
+        }
+    }
+
+    nextCustomerID = highestCustomerID + 1;
+
+    if (loadedNextCustomerID > nextCustomerID)
+    {
+        nextCustomerID = loadedNextCustomerID;
+    }
 
     return 1;
 }
-int saveDepartments(void)
+
+/* ==================== Department Storage ==================== */
+
+s32 saveDepartments(void)
 {
     FILE *file;
-    int i;
+    s32 index;
 
     file = fopen("departments.txt", "w");
 
     if (file == NULL)
     {
-        printf("Error: Could not open departments.txt for saving.\n");
+        printf(COLOR_RED
+               "Error: Could not open departments file for saving.\n"
+               COLOR_RESET);
         return 0;
     }
 
-    for (i = 0; i < total_departments; i++)
+    for (index = 0; index < total_departments; index++)
     {
         fprintf(file,
                 "%d|%s|%d|%s\n",
-                department_list[i].departmentID,
-                department_list[i].departmentName,
-                department_list[i].departmentManagerID,
-                department_list[i].description);
+                department_list[index].departmentID,
+                department_list[index].departmentName,
+                department_list[index].departmentManagerID,
+                department_list[index].description);
     }
+
+    fclose(file);
+    saveNextIDs();
+
+    return 1;
+}
+
+s32 loadDepartments(void)
+{
+    FILE *file;
+    s8 line[500];
+    s8 *start;
+    s8 *end;
+    s32 index;
+    s32 length;
+    s32 loadedNextDepartmentID;
+    s32 highestDepartmentID;
+
+    file = fopen("departments.txt", "r");
+
+    total_departments = 0;
+
+    if (file == NULL)
+    {
+        return 0;
+    }
+
+    index = 0;
+
+    while (index < MAX_DEPARTMENTS &&
+            fgets(line, sizeof(line), file) != NULL)
+    {
+        line[strcspn(line, "\n")] = '\0';
+        start = line;
+
+        /* Department ID */
+        end = strchr(start, '|');
+        if (end == NULL)
+        {
+            break;
+        }
+
+        *end = '\0';
+        department_list[index].departmentID = atoi(start);
+        start = end + 1;
+
+        /* Department Name */
+        end = strchr(start, '|');
+        if (end == NULL)
+        {
+            break;
+        }
+
+        length = (s32)(end - start);
+
+        if (length >= (s32)sizeof(department_list[index].departmentName))
+        {
+            length = (s32)sizeof(department_list[index].departmentName) - 1;
+        }
+
+        strncpy(department_list[index].departmentName, start, length);
+        department_list[index].departmentName[length] = '\0';
+        start = end + 1;
+
+        /* Department Manager ID */
+        end = strchr(start, '|');
+        if (end == NULL)
+        {
+            break;
+        }
+
+        *end = '\0';
+        department_list[index].departmentManagerID = atoi(start);
+        start = end + 1;
+
+        /* Description */
+        strncpy(department_list[index].description,
+                start,
+                sizeof(department_list[index].description) - 1);
+        department_list[index].description[
+            sizeof(department_list[index].description) - 1
+        ] = '\0';
+
+        index++;
+    }
+
+    total_departments = index;
+    fclose(file);
+
+    loadedNextDepartmentID = nextDepartmentID;
+    highestDepartmentID = 0;
+
+    for (index = 0; index < total_departments; index++)
+    {
+        if (department_list[index].departmentID > highestDepartmentID)
+        {
+            highestDepartmentID = department_list[index].departmentID;
+        }
+    }
+
+    nextDepartmentID = highestDepartmentID + 1;
+
+    if (loadedNextDepartmentID > nextDepartmentID)
+    {
+        nextDepartmentID = loadedNextDepartmentID;
+    }
+
+    return 1;
+}
+
+/* ==================== Automatic ID Storage ==================== */
+
+s32 saveNextIDs(void)
+{
+    FILE *file;
+
+    file = fopen("next_ids.txt", "w");
+
+    if (file == NULL)
+    {
+        printf(COLOR_RED
+               "Error: Could not save next ID values.\n"
+               COLOR_RESET);
+        return 0;
+    }
+
+    fprintf(file,
+            "%d|%d|%d\n",
+            nextCustomerID,
+            nextEmployeeID,
+            nextDepartmentID);
 
     fclose(file);
 
     return 1;
 }
 
-int loadDepartments(void)
+s32 loadNextIDs(void)
 {
     FILE *file;
-    char line[500];
-    int i = 0;
+    s32 customerID;
+    s32 employeeID;
+    s32 departmentID;
 
-    file = fopen("departments.txt", "r");
+    file = fopen("next_ids.txt", "r");
 
     if (file == NULL)
     {
-        total_departments = 0;
+        nextCustomerID = 1;
+        nextEmployeeID = 1;
+        nextDepartmentID = 1;
         return 0;
     }
 
-    total_departments = 0;
-
-    while (i < MAX_DEPARTMENTS &&
-           fgets(line, sizeof(line), file) != NULL)
+    if (fscanf(file,
+               "%d|%d|%d",
+               &customerID,
+               &employeeID,
+               &departmentID) == 3)
     {
-        char *start;
-        char *end;
-        int length;
-
-        /* Remove newline */
-        line[strcspn(line, "\n")] = '\0';
-
-        start = line;
-
-        /* ================= Department ID ================= */
-
-        end = strchr(start, '|');
-
-        if (end == NULL)
-            break;
-
-        *end = '\0';
-
-        department_list[i].departmentID = atoi(start);
-
-        start = end + 1;
-
-        /* ================= Department Name ================= */
-
-        end = strchr(start, '|');
-
-        if (end == NULL)
-            break;
-
-        length = end - start;
-
-        if (length >= sizeof(department_list[i].departmentName))
-            length = sizeof(department_list[i].departmentName) - 1;
-
-        strncpy(department_list[i].departmentName,
-                start,
-                length);
-
-        department_list[i].departmentName[length] = '\0';
-
-        start = end + 1;
-
-        /* ================= Manager ID ================= */
-
-        end = strchr(start, '|');
-
-        if (end == NULL)
-            break;
-
-        *end = '\0';
-
-        department_list[i].departmentManagerID = atoi(start);
-
-        start = end + 1;
-
-        /* ================= Description ================= */
-
-        strncpy(department_list[i].description,
-                start,
-                sizeof(department_list[i].description) - 1);
-
-        department_list[i].description[
-            sizeof(department_list[i].description) - 1
-        ] = '\0';
-
-        i++;
+        nextCustomerID = customerID;
+        nextEmployeeID = employeeID;
+        nextDepartmentID = departmentID;
     }
-
-    total_departments = i;
 
     fclose(file);
 
