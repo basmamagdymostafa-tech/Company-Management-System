@@ -1,245 +1,168 @@
 #include <stdio.h>
-#include <stdlib.h>
-//#include <windows.h>
 
-#include "Customers.h"
+#include "config.h"
+#include "customers.h"
 #include "departments.h"
-#include "Employees.h"
+#include "employees.h"
 #include "hierarchy.h"
-#include "Storage.h"
+#include "storage.h"
+#include "validation.h"
 
+/* ==================== Main Menu ==================== */
 
-int main()
+int main(void)
 {
+    s32 choice;
+
+    loadNextIDs();
     loadEmployee();
     loadCustomers();
     loadDepartments();
 
-    int choice;
-
+    choice = -1;
 
     do
     {
         clearScreen();
 
         printf("=========================================\n");
-        printf("      COMPANY MANAGEMENT SYSTEM          \n");
+        printf(COLOR_CYAN COLOR_BOLD
+               "      COMPANY MANAGEMENT SYSTEM\n"
+               COLOR_RESET);
         printf("=========================================\n");
 
-        /* ================= CUSTOMER ================= */
+        printf("\n");
         printf("  1. Add Customer\n");
         printf("  2. Delete Customer\n");
         printf("  3. View Customer\n");
         printf("  4. View All Customers\n");
         printf("  5. Update Customer\n");
 
-        /* ================= EMPLOYEE ================= */
+        printf("\n");
         printf("  6. Add Employee\n");
         printf("  7. View Employee\n");
 
-        /* ================= DEPARTMENT ================ */
+        printf("\n");
         printf("  8. Add Department\n");
         printf("  9. View Department\n");
-
-        /* ================= HIERARCHY ================= */
-        printf(" 10. View Employee Hierarchy\n");
+        printf(" 10. Assign Department Manager\n");
         printf(" 11. View Department Employees\n");
 
-        printf("  0. Exit\n");
+        printf("\n");
+        printf(" 12. View Direct Reports\n");
+        printf(" 13. View Employee Hierarchy\n");
 
+        printf("\n");
+        printf("  0. Exit\n");
         printf("=========================================\n");
 
-
-        printf("\nEnter your choice: ");
-
-        if (scanf("%d", &choice) != 1)
+        if (!readInt("\nEnter your choice: ", &choice))
         {
-            /* Handle malformed character inputs gracefully */
-            clearInputBuffer();
-
-            printf("Invalid input! Please enter a number.\n");
-
             pauseScreen();
-
             continue;
         }
 
-        clearInputBuffer();
-
-
         switch (choice)
         {
-            /* =================================================
-               CUSTOMER OPTIONS
-               ================================================= */
-
-            case 1:
-
-                clearScreen();
-
-                addCustomer();
-
-                pauseScreen();
-
-                break;
-
-
-            case 2:
-
-                clearScreen();
-
-                deleteCustomer();
-
-                pauseScreen();
-
-                break;
-
-
-            case 3:
-
-                clearScreen();
-
-                viewCustomer();
-
-                pauseScreen();
-
-                break;
-
-
-            case 4:
-
-                clearScreen();
-
-                viewAllCustomers();
-
-                pauseScreen();
-
-                break;
-
-
-            case 5:
-
-                clearScreen();
-
-                updateCustomer();
-
-                pauseScreen();
-
-                break;
-
-
-            /* =================================================
-               EMPLOYEE OPTIONS
-               ================================================= */
-
-            case 6:
-
-                clearScreen();
-
-                addEmployee();
-
-                pauseScreen();
-
-                break;
-
-
-            case 7:
-
-                clearScreen();
-
-                viewEmployee();
-
-                pauseScreen();
-
-                break;
-
-
-            /* =================================================
-               DEPARTMENT OPTIONS
-               ================================================= */
-
-            case 8:
-
-                clearScreen();
-
-                addDepartment();
-
-                pauseScreen();
-
-                break;
-
-
-            case 9:
-
-                clearScreen();
-
-                viewDepartment();
-
-                pauseScreen();
-
-                break;
-
-
-            /* =================================================
-               HIERARCHY OPTIONS
-               ================================================= */
-
-            case 10:
-
-                clearScreen();
-
-                viewEmployeeHierarchy();
-
-                pauseScreen();
-
-                break;
-
-
-            case 11:
-
-                clearScreen();
-
-                viewDepartmentEmployees();
-
-                pauseScreen();
-
-                break;
-
-
-            /* =================================================
-               EXIT
-               ================================================= */
-
-            case 0:
-
-                saveEmployee();
-                saveCustomers();
-                saveDepartments();
-
-                printf("\nExiting...\n");
-
-                printf("Thank you for using our company management system :)\n");
-
-                break;
-
-
-            /* =================================================
-               INVALID CHOICE
-               ================================================= */
-
-            default:
-
-                printf("\nInvalid choice. Please return to the main menu "
-                       "and choose between 0 and 11.\n");
-
-                pauseScreen();
-
-                break;
+        case 1:
+            clearScreen();
+            addCustomer();
+            pauseScreen();
+            break;
+
+        case 2:
+            clearScreen();
+            deleteCustomer();
+            pauseScreen();
+            break;
+
+        case 3:
+            clearScreen();
+            viewCustomer();
+            pauseScreen();
+            break;
+
+        case 4:
+            clearScreen();
+            viewAllCustomers();
+            pauseScreen();
+            break;
+
+        case 5:
+            clearScreen();
+            updateCustomer();
+            pauseScreen();
+            break;
+
+        case 6:
+            clearScreen();
+            addEmployee();
+            pauseScreen();
+            break;
+
+        case 7:
+            clearScreen();
+            viewEmployee();
+            pauseScreen();
+            break;
+
+        case 8:
+            clearScreen();
+            addDepartment();
+            pauseScreen();
+            break;
+
+        case 9:
+            clearScreen();
+            viewDepartment();
+            pauseScreen();
+            break;
+
+        case 10:
+            clearScreen();
+            assignDepartmentManager();
+            pauseScreen();
+            break;
+
+        case 11:
+            clearScreen();
+            viewDepartmentEmployees();
+            pauseScreen();
+            break;
+
+        case 12:
+            clearScreen();
+            viewDirectReports();
+            pauseScreen();
+            break;
+
+        case 13:
+            clearScreen();
+            viewEmployeeHierarchy();
+            pauseScreen();
+            break;
+
+        case 0:
+            saveEmployee();
+            saveCustomers();
+            saveDepartments();
+
+            printf("\n");
+            printf(COLOR_GREEN
+                   "Exiting...\n"
+                   "Thank you for using our company management system :)\n"
+                   COLOR_RESET);
+            break;
+
+        default:
+            printf(COLOR_RED
+                   "\nInvalid choice. Please choose a number from 0 to 13.\n"
+                   COLOR_RESET);
+            pauseScreen();
+            break;
         }
-
     }
     while (choice != 0);
-
 
     return 0;
 }
